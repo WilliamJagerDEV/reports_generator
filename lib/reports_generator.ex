@@ -1,5 +1,5 @@
 defmodule ReportsGenerator do
-  # ReportsGenerator.build("report_test.csv")
+  alias ReportsGenerator.Parser
 
   # def build(filename) do
   #   case File.read("reports/#{filename}") do
@@ -8,24 +8,15 @@ defmodule ReportsGenerator do
   #   end
   # end
 
+  # ReportsGenerator.build("report_complete.csv")
   def build(filename) do
-    "reports/#{filename}"
-    # retorna metadados e path do arquivo
-    |> File.stream!()
-    |> Enum.reduce(report_acc(), fn line, report ->
-      [id, _food_name, price] = parse_line(line)
-      Map.put(report, id, report[id] + price)
-    end)
-  end
-
-  defp parse_line(line) do
-    line
-    |> String.trim()
-    |> String.split(",")
-    # atualiza terceira posição da lista substituindo string por inteiro
-    |> List.update_at(2, &String.to_integer/1)
+    filename
+    |> Parser.parse_file()
+    |> Enum.reduce(report_acc(), fn line, report -> sum_values(line, report) end)
   end
 
   # cria um map com chaves de 1 a 30 para o .csv completo
   defp report_acc, do: Enum.into(1..30, %{}, &{Integer.to_string(&1), 0})
+
+  defp sum_values([id, _food_name, price], report), do: Map.put(report, id, report[id] + price)
 end
